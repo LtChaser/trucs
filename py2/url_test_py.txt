@@ -1,0 +1,165 @@
+
+# To use the input params, simply use d["channelNumber"] d["replayIcon"] d["posterAvailable"] d["pgrName"] d["pgrDate"] d["videoLoadingTime"] d["videoLaunch"] d["trickmodePause"] d["trickmodeForward"] d["trickmodeRewind"] 
+# Your code here
+
+##### Input Parameters for Splitted Audio/Video:   audioAvail   /   videoAvail
+
+init_logging(d)
+
+import socket
+import sys
+from urllib2 import Request, urlopen
+import urllib
+import json
+import time
+
+# to call device API
+request = Request('http://127.0.0.1/api/v2/devices/' + d["environment"]["device_uuid"])
+response_body = urlopen(request).read()
+output = json.loads(response_body)
+device_properties = json.loads(output['properties'])
+
+# to get scriptName from custom properties
+for custom_property in device_properties['properties_attributes'] :
+	if custom_property['key'] =='scriptName' : #check if the desired custom property key is available
+		scriptName = custom_property['value'] #store the value of the property
+		break
+
+# to get robot_ip from custom properties
+for custom_property in device_properties['properties_attributes'] :
+	if custom_property['key'] =='robotip' : #check if the desired custom property key is available
+		robotip = custom_property['value'] #store the value of the property
+		break
+
+#to get measure_run_id
+if 'run_uuid' in d['environment'] :
+    run_uuid = d['environment']['run_uuid']
+elif 'sessionName' in d :
+    run_uuid = d['sessionName']
+	
+# to send
+MEASURE_RUN_ID = run_uuid
+SCRIPT_NAME = scriptName
+ROBOT_IP = robotip
+CHANNEL_NUMBER = d["channelNumber"]
+REPLAY_ICON_PRESENCE = d["replayIcon"]
+POSTER_AVAIL = d["posterAvailable"]
+PROGRAM_TITLE = d["pgrName"]
+TIMESLOT = d["pgrDate"]
+VIDEO_LOADING_TIME = d["videoLoadingTime"]
+LAUNCH_VIDEO = d["videoLaunch"]
+TRICKMODE_PAUSE = d["trickmodePause"]
+TRICKMODE_FORWARD = d["trickmodeForward"]
+TRICKMODE_REWIND = d["trickmodeRewind"]
+AUDIO_AVAIL = d["audioAvail"] #  New Key/Value
+VIDEO_AVAIL = d["videoAvail"] #  New Key/Value
+ASSET_ID = d["assetID"]
+PROGRAM_DAY =d["pgrDay"]
+PGR_ELAPSED_TIME = d["pgrElapsedTime"]
+
+#to print
+logging.debug('MEASURE_RUN_ID: %s', MEASURE_RUN_ID)
+logging.debug('SCRIPT_NAME: %s', SCRIPT_NAME)
+logging.debug('ROBOT_IP: %s', ROBOT_IP)
+logging.debug('CHANNEL_NUMBER: %s', CHANNEL_NUMBER)
+logging.debug('REPLAY_ICON_PRESENCE_%s: %s', d["counter"], REPLAY_ICON_PRESENCE)
+logging.debug('POSTER_AVAIL_%s: %s', d["counter"], POSTER_AVAIL)
+logging.debug('PROGRAM_TITLE_%s: %s', d["counter"], PROGRAM_TITLE)
+logging.debug('TIMESLOT_%s: %s', d["counter"], TIMESLOT)
+logging.debug('VIDEO_LOADING_TIME_%s: %s', d["counter"], VIDEO_LOADING_TIME)
+logging.debug('LAUNCH_VIDEO_%s: %s', d["counter"], LAUNCH_VIDEO)
+logging.debug('AUDIO_AVAIL_%s: %s', d["counter"], AUDIO_AVAIL) #Associated Debug
+logging.debug('VIDEO_AVAIL_%s: %s', d["counter"], VIDEO_AVAIL) ###
+logging.debug('TRICKMODE_PAUSE_%s: %s', d["counter"], TRICKMODE_PAUSE)
+logging.debug('TRICKMODE_FORWARD_%s: %s', d["counter"], TRICKMODE_FORWARD)
+logging.debug('TRICKMODE_REWIND_%s: %s', d["counter"], TRICKMODE_REWIND)
+logging.debug('ASSET_ID_%s: %s', d["counter"], ASSET_ID)
+logging.debug('PROGRAM_DAY_%s: %s', d["counter"], PROGRAM_DAY)
+logging.debug('PGR_ELAPSED_TIME_%s: %s', d["counter"], PGR_ELAPSED_TIME)
+
+# to build packet
+values = { 'MEASURE_RUN_ID': MEASURE_RUN_ID,'SCRIPT_NAME': SCRIPT_NAME,'ROBOT_IP': ROBOT_IP,'CHANNEL_NUMBER': CHANNEL_NUMBER,'REPLAY_ICON_PRESENCE_'+d["counter"]: REPLAY_ICON_PRESENCE,'POSTER_AVAIL_'+d["counter"]: POSTER_AVAIL,'PROGRAM_TITLE_'+d["counter"]: PROGRAM_TITLE,'TIMESLOT_'+d["counter"]: TIMESLOT,'VIDEO_LOADING_TIME_'+d["counter"]: VIDEO_LOADING_TIME,'LAUNCH_VIDEO_'+d["counter"]: LAUNCH_VIDEO,'VIDEO_AVAIL_'+d["counter"]: VIDEO_AVAIL, 'AUDIO_AVAIL_'+d["counter"]: AUDIO_AVAIL, 'TRICKMODE_PAUSE_'+d["counter"]: TRICKMODE_PAUSE,'TRICKMODE_FORWARD_'+d["counter"]: TRICKMODE_FORWARD,'TRICKMODE_REWIND_'+d["counter"]: TRICKMODE_REWIND,'ASSET_ID_'+d["counter"]: ASSET_ID,'PROGRAM_DAY_'+d["counter"]: PROGRAM_DAY,'PGR_ELAPSED_TIME_'+d["counter"]: PGR_ELAPSED_TIME }
+data = json.dumps(values)
+
+#to write into file
+logging.debug('Writing to json file')
+pathFile = os.getenv('WITBELOGSSTORAGE')+'\\witbe-scenario-engine\\' + run_uuid + '\\'
+with open(pathFile+'postdataAsset_'+d["counter"]+'.json', 'w') as outfile:
+    json.dump(data, outfile)
+
+# to post the request
+logging.debug('Sending http post request ...')
+request = Request('http://172.29.63.38:8013/post',data, {'Content-Type': 'application/json'})
+try:
+    response_body = json.loads(urlopen(request, timeout=3).read())
+except HTTPError as e:
+    logging.exception('HTTP Error: %s', e.reason)
+    logging.exception('HTTP Error code: %s', e.code)
+except URLError as e:
+    logging.exception('URL Error: %s', e.reason)
+except socket.timeout as e :
+    logging.exception('Timeout raised and caught: %r', e)
+except ValueError, e:
+    logging.exception('Value Error: %s', e)
+
+ret_dict = {}
+ret_dict["returncode"] = 0 # set to 1 to output on the FAILURE output
+
+return ret_dict
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
