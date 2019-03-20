@@ -1,0 +1,102 @@
+Hi Hugo and Clement,
+
+Please work on Ditto today/tomorrow.
+Cross review available assets….we need to help developer to correct all logic ….
+1.	We should have e2e view of all assets with right status
+2.	All validation logic per component needs to be documented.
+
+Regards, Nitya
+Manager OTT & Interactive Services
+T&I Core Video Operation
+
+#################################
+Dear All,
+
+Great team work last week with help of Deepak on UK ingest. We didn’t have complains in the weekend. This was/is very good examples for learning. 
+
+Job done 50%  and then we need to do as below.
+1.	Find a way to identify other assets in UI which user cant play.
+a.	One way can be…login to TV GO and try multiple assets to play. trying 50 assets should not take more than 10 mins. You need to keep in mind about user subscription which me or Deepak will explain when you need.
+b.	Query OESP API calls for all assets
+c.	Etc
+2.	Once you have few assets, try to find rootcause and category…followed by related impact on all assets.
+3.	Check Ditto : http://uk-ditto.chello.com:1212/ . Validate failed assets here as well. We also need to give feedback about Ditto validation which will be identified in step 1-2 but not identified by Ditto yet
+4.	Also investigate Airflow failed assets:
+a.	Try to catagories failure.
+b.	Create daily automated report. Joaquin is now creating manually
+c.	We need to identify permanent fix.
+
+All above…try to complete today and tomorrow. Then we need to replicate same for VTR this week which is not also in good shape.
+
+
+ea6a2287272c9edb07035846a569ac1b7c8320d0642fe25c5751b90cc9fefc65
+
+Household ID to unregister device
+###############################################
+1. Validate failed assets on Ditto
+2. Validate Ditto
+	2.1 Check if assets are valid
+	2.2 Check Assets not in Ditto but Valid 
+3. Validate successful Assets 
+###############################################
+OESP asset metadata
+https://web-api-pepper.horizon.tv/oesp/v3/GB/eng/web/mediagroups/crid%3A~~2F~~2Fog.libertyglobal.com~~2FCNW~~2F12274781
+https://web-api-pepper.horizon.tv/oesp/v3/GB/eng/web/mediaitems/crid:~~2F~~2Fog.libertyglobal.com~~2FDSC~~2FPAID0000000001548155
+
+https://web-api-pepper.horizon.tv/oesp/v3/GB/eng/web/mediaitems/crid%3A~~2F~~2Fog.libertyglobal.com~~HIS~~PAID0000000001553619
+#########################################################################33
+@ Daniil.
+From where the assets are taken from OG?
+What Determine MAG/OESP failures ?
+Number of assets present on managed folder.
+Number of Assets shown as invalid on Ditto but appearing as valid.
+
+Path for 
+/mnt/nfs_managed/Countries/UK/FromAirflow
+
+Assets arrive in watch folder
+uk_watch_folder
+/mnt/nfs_watch/Countries/UK/ToAirflow
+#########################################################################
+
+MAG/OESP
+No. I would need to receive information for what is considered valid, then it can be implemented.
+	=> Current Product ID
+	=> Assets start date / end date ?
+	=> Same for OESP and MAG?
+		==> Provide translated key between MAG and OESP
+	=> title, licence period cprodId. Group id for series ...
+	
+OG 	
+From where do you pick up the TVA files you are testing on the OG side?
+	=> Picked up from S3 bucket. Validated by being present. No inside metadata checked. 
+		= OG output used as input. So Final TVA files. Not more upstream than that.
+			Ditto has no access to OG itself. Makes sense.
+			
+On Airflow check "Generate TVA file and validate_mag_ingest":
+
+ON OUTPUT TVA FILE is present (Which can be correlated to MAG then to OESP):
+	<ProgramInformation programId="crid://og.libertyglobal.com/VME/PAID0000000001463706" fragmentId="VME.PAID0000000001463706" fragmentExpirationDate="2021-11-30T23:59:59Z" fragmentVersion="10">
+
+	<StartOfAvailability>2017-12-28T00:00:01Z</StartOfAvailability>
+    <EndOfAvailability>2021-11-30T23:59:59Z</EndOfAvailability>
+	
+	<Title xml:lang="en-EN">Will</Title>
+     <Title xml:lang="en-EN" type="episodeTitle">The Play's the Thing</Title>
+	https://oboposter.prod.ukv.dmdsdp.com/ImagesEPG/OndemandImages/photos/movieposters/VMUK/PI/crid~~3A~~2F~~2Fog.libertyglobal.com~~2FVME~~2FPAID0000000001463706/254945099e2db1ddb493ef8091ab1886.jpg</MediaUri>
+
+	
+############################################################################
+Check Presence and validate FIELD is NOT empty // Validate aggainst REGEX:
+	"crid" key in mag				==> Validate aggainst VALUE extracted from OG TVA
+	"mediaIteamId" key in OESP		==> Validate aggainst VALUE extracted from OG TVA							
+	
+	"availabilityEndAt" "availabilityStartAt" keys in MAG   ==> Validate aggainst VALUE extracted from OG TVA
+	"streamingUrl" in OESP
+	
+	
+	
+	"entitlements" can be correlated with data from OG
+##################################################################################
+DITTO File correlation OG > MAG > OESP
+	
