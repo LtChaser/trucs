@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+import os
+import random
+import subprocess
+
+def getvpn(country):
+
+    tcp = '/etc/openvpn/nordvpn/ovpn_tcp'
+    countryList = []
+
+    filelist = os.listdir(tcp)
+
+    for file in filelist:
+        if file.startswith(country):
+            countryList.append(file)
+
+
+    vpn = random.choice(countryList)
+    return vpn
+
+
+def connect(addr):
+    try:
+        print("Connecting to: " + addr)
+        subprocess.run(["sudo", "openvpn", "/etc/openvpn/nordvpn/ovpn_tcp/" + addr])
+    except:
+        print("Connection failed. Wrong country code ?")
+
+if __name__ == "__main__":
+    country = input("Where should we connect? \n >> ")
+    address = getvpn(country)
+    connect(address)
